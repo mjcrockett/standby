@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+        <link rel="stylesheet" href="./styles.css">
+
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+        <script>
+            const state = Object.freeze({"playing":1, "paused":2});
+            const jsonUrl = "./resources/manifest.json";
+            var backgrounds = [];
+            var receivedInteraction = false;
+            var currentState = state.paused;
+            var manifestArr = [];
+            var index = 0;
+            var $playPause;
+            var $imgA;
+            var $imgB;
+
+            $(document).ready(function(){
+
+                $.getJSON(jsonUrl, function (data){
+                    manifestArr = data.manifest;
+                    backgrounds = data.backgrounds;
+
+                    $.each(manifestArr, function(ct, v){
+                        var audio = document.createElement("audio");
+                        //audio.src = v.file;
+                        audio.type = 'audio/mpeg';
+                        audio.index = ct;
+                        audio.addEventListener('ended', function(){
+                            onNext();
+                        });
+                        v.tag = audio;
+                    });
+
+                    initABackground();
+                    loadATitle();
+                });
+
+                $playPause = $('.mc-icon.play');
+
+                $playPause.on('click', function(e){
+
+                    if (!receivedInteraction){
+                        receivedInteraction = true;
+                        initASong();
+                    }
+                    else if (currentState === state.playing){
+                        pauseASong();
+                    }
+                    else {
+                        playASong();
+                    }
+                });
+
+                $('.mc-icon.skip').on('click', function(){
+                    if (!receivedInteraction){
+                        receivedInteraction = true;
+                    }
+                    onNext();
+                });
+
+                $('#cancel-text').on('click', function(){
+                    $('#info-section').remove();
+                    if (currentState == state.paused && !receivedInteraction){
+                        $playPause.trigger('click');
+                    }
+                });
+            });
+
+            function onNext(){
+                if (index < manifestArr.length - 1){
+                        index++;
+                    }
+                    else {
+                        index = 0;
+                    }
+
+                    loadATitle();
+                    initASong();
+            }
+
+            function loadATitle(){
+                $('#title').text(manifestArr[index].title);
+            }
+
+            function initASong(){
+                var $holder = $('#audio-holder');
+                var tag = manifestArr[index].tag;
+
+                if ($holder.children().length > 0){
+                    //destroy the old audio if it exists
+                    var tempTag = $holder.children().first()[0];
+                    tempTag.pause();
+                    tempTag.removeAttribute('src');
+                    tempTag.load();
+
+                    $holder.empty();
+                }
+
+                //load the new audio
+                $holder.append(tag);
+                tag.addEventListener('canplaythrough', playASong);
+                tag.src = manifestArr[index].file;
+                tag.load();
+            }
+
+            function playASong(evt){
+                var tag = manifestArr[index].tag;
+                tag.removeEventListener('canplaythrough', playASong);
+                tag.play();
+                currentState = state.playing;
+                swapAButton();
+            }
+
+            function pauseASong(evt){
+                var tag = manifestArr[index].tag;
+                tag.pause();
+                currentState = state.paused;
+                swapAButton();
+            }
+
+            function swapAButton(){
+                if (currentState === state.playing){
+                    $playPause.removeClass('play').addClass('pause');
+                }
+                else {
+                    $playPause.removeClass('pause').addClass('play');
+                }
+            }
+
+            function getRandomImageLocation(){
+                var randomNumber = Math.floor(Math.random() * backgrounds.length);
+                return backgrounds[randomNumber];
+            }
+
+            function initABackground(){
+                $imgA = $('#imgA');
+                $imgB = $('#imgB');
+                $imgA.addClass('active');
+                $imgA.css({ 'background-image': 'url("' + getRandomImageLocation() + '")'});
+                setTimeout(function() {
+                        $imgB.css({ 'background-image': 'url("' + getRandomImageLocation() + '")'});
+                    }, 9000);
+                setTimeout(swapBackground, 10000);
+            }
+
+            function swapBackground(){
+
+                setTimeout(swapBackground, 10000);
+
+                if ($imgA.hasClass('active')){
+                    $imgA.removeClass('active');
+                    $imgB.addClass('active');
+                    setTimeout(function() {
+                        $imgA.css({ 'background-image': 'url("' + getRandomImageLocation() + '")'});
+                    }, 9000);
+                }
+                else {
+                    $imgB.removeClass('active');
+                    $imgA.addClass('active');
+                    setTimeout(function() {
+                        $imgB.css({ 'background-image': 'url("' + getRandomImageLocation() + '")'});
+                    }, 9000);
+                }
+            }
+
+        </script>
+    </head>
+    <body>
+        <div id="imgA" class="img-bkgrnd"></div>
+        <div id="imgB" class="img-bkgrnd"></div>
+        <div id="audio-holder"></div>
+        <div class="container">
+            <div class="row justify-content-center">
+
+                <div class="col col-sm-8 col-md-5 mc-bkgrnd p-3">
+                    <div class="row">
+                        <div class="col" style="text-align: right;">
+                            <div id="play-btn" class="btn-holder">
+                                <a class="mc-icon play"></a>
+                            </div>
+                        </div>
+                        <div class="col" style="text-align: left;">
+                            <div class="btn-holder">
+                                <a class="mc-icon skip"></a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div id="title" class="col mc-txt center-txt">
+                            Song title
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col mc-txt">
+                            <h1>shorty/break</h1>
+                        </div>
+                    </div>
+                    <div class="row" id="info-section">
+                        <div class="col">
+                            <div class="card text-white bg-dark">
+                                <div class="card-body">
+                                    <a class="mc-icon cancel-circled" id="cancel-text"></a>
+                                    <p class="card-text">Presenters, use this page when pausing for breaks. Your audience will love it!</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </body>
+</html>

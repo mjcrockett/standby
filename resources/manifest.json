@@ -1,0 +1,30 @@
+{  
+    "manifest":[  
+        {  
+        "title":"Herb Alpert - Spanish Flea",
+        "file":"resources/Herb_Alpert-Spanish_Flea.mp3"
+        },
+        {  
+        "title":"Herb Alpert - Tijuana Taxi",
+        "file":"resources/Herb_Alpert-Tijuana_Taxi.mp3"
+        },
+        {  
+        "title":"Monty Python and the Holy Grail - Intermission Music",
+        "file":"resources/Monty_Python_and_the_Holy_Grail-Intermission_Music.mp3"
+        }
+    ],
+    "backgrounds": [
+        "./resources/intermission1.png", 
+        "./resources/intermission2.png",
+        "./resources/intermission3.png",
+        "./resources/intermission4.png",
+        "./resources/intermission5.png",
+        "./resources/intermission6.png",
+        "./resources/intermission7.png",
+        "./resources/intermission8.png",
+        "./resources/intermission9.png",
+        "./resources/intermission10.png",
+        "./resources/intermission11.png",
+        "./resources/intermission12.png"
+    ]
+}
